@@ -1,4 +1,4 @@
-package com.strateos.gradle
+package com.website.gradle
 
 object Dependencies {
   val ScalaMajor = "2.13"

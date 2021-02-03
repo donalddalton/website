@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: website-service
+  namespace: website
+  labels:
+    app: website-app
+spec:
+  selector:
+    app: website-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9000
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deployment
+  namespace: website
+  labels:
+    app: website
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: website-app
+  template:
+    metadata:
+      labels:
+        app: website-app
+    spec:
+      containers:
+        - name: website
+          image: 477016018110.dkr.ecr.us-west-2.amazonaws.com/website:latest
+          ports:
+            - containerPort: 9000

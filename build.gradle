@@ -1,4 +1,4 @@
-import com.strateos.gradle.Dependencies
+import com.website.gradle.Dependencies
 
 plugins {
   id "com.diffplug.gradle.spotless" version "3.28.0"
