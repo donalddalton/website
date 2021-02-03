@@ -1,0 +1,86 @@
+import com.strateos.gradle.Dependencies
+
+plugins {
+  id "com.diffplug.gradle.spotless" version "3.28.0"
+  id 'com.google.cloud.tools.jib' version '2.5.0'
+  id "org.gradle.playframework" version '0.10'
+  id "scala"
+}
+
+repositories {
+  jcenter()
+  maven {
+    name "lightbend-maven-release"
+    url "https://repo.lightbend.com/lightbend/maven-releases"
+  }
+  ivy {
+    name "lightbend-ivy-release"
+    url "https://repo.lightbend.com/lightbend/ivy-releases"
+    layout "ivy"
+  }
+}
+
+play {
+  platform {
+    playVersion = Dependencies.PlayVersion()
+    scalaVersion = Dependencies.ScalaMajor()
+    javaVersion = JavaVersion.VERSION_1_8
+  }
+  injectedRoutesGenerator = true
+  jar {
+    enabled = true
+  }
+}
+
+jib {
+  from {
+    image = "openjdk:8-jdk-slim"
+  }
+  to {
+    image = "477016018110.dkr.ecr.us-west-2.amazonaws.com/website"
+    tags = ["latest"]
+  }
+  container {
+    entrypoint = ["/play/main/bin/main"]
+    ports = ["9000"]
+  }
+  extraDirectories {
+    paths {
+      path {
+        from = file("$buildDir/stage")
+        into = "/play"
+      }
+    }
+    permissions = ["/play/**/*": "777"]
+  }
+}
+
+// create the distribution before building the image
+getTasks().getByName("jib").dependsOn(stage)
+jibDockerBuild.dependsOn(stage)
+
+test {
+  useJUnitPlatform()
+}
+
+spotless {
+  scala {
+    target fileTree(rootDir) {
+      include '**/*.scala'
+      exclude '**/build'
+    }
+    scalafmt("2.5.2").configFile("$rootDir/.scalafmt.conf")
+  }
+}
+
+dependencies {
+  implementation Dependencies.scala()
+  implementation Dependencies.guice()
+
+  implementation Dependencies.playJsonJoda()
+  testImplementation Dependencies.scalaTestPlay()
+  testImplementation Dependencies.junitEngine()
+  testImplementation Dependencies.junitLauncher()
+  testImplementation Dependencies.junitRunner()
+  implementation Dependencies.logback()
+}

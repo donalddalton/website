@@ -1,0 +1,13 @@
+plugins {
+  id "java-gradle-plugin"
+  id "scala"
+}
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  implementation gradleApi()
+  implementation "org.scala-lang:scala-library:2.13.3"
+}
