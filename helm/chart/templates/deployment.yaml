@@ -3,11 +3,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: website-deployment
-  namespace: website
+  namespace: {{ template "name" . }}
   labels:
     app: website
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       app: website-app
@@ -18,6 +18,6 @@ spec:
     spec:
       containers:
         - name: website
-          image: 477016018110.dkr.ecr.us-west-2.amazonaws.com/website:latest
+          image: "{{ .Values.image }}:{{ .Chart.AppVersion }}"
           ports:
-            - containerPort: 9000
+            - containerPort: {{ .Values.port }}
