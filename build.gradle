@@ -3,6 +3,7 @@ import com.website.gradle.Dependencies
 plugins {
   id "com.diffplug.gradle.spotless" version "3.28.0"
   id 'com.google.cloud.tools.jib' version '2.5.0'
+  id 'de.undercouch.download' version '4.0.0'
   id "org.gradle.playframework" version '0.10'
   id "scala"
 }
@@ -18,6 +19,16 @@ repositories {
     url "https://repo.lightbend.com/lightbend/ivy-releases"
     layout "ivy"
   }
+}
+
+ext {
+  KANELA_AGENT = "kanela-agent-${Dependencies.Kanela()}.jar"
+  KANELA_URL = "https://repo1.maven.org/maven2/io/kamon/kanela-agent/${Dependencies.Kanela()}/$KANELA_AGENT"
+}
+
+task downloadKanelaAgent(type: Download) {
+  src KANELA_URL
+  dest "${buildDir}/agents/$KANELA_AGENT"
 }
 
 play {
@@ -43,6 +54,8 @@ jib {
   container {
     entrypoint = ["/play/main/bin/main"]
     ports = ["9000"]
+    // launch the app with the kanela agent
+    environment = ["JAVA_OPTS":"-javaagent:/play/agents/$KANELA_AGENT".toString()]
   }
   extraDirectories {
     paths {
@@ -50,12 +63,18 @@ jib {
         from = file("$buildDir/stage")
         into = "/play"
       }
+      path {
+        from = file("$buildDir/agents")
+        into = "/play/agents"
+      }
+
     }
     permissions = ["/play/**/*": "777"]
   }
 }
 
 // create the distribution before building the image
+stage.dependsOn(downloadKanelaAgent)
 getTasks().getByName("jib").dependsOn(stage)
 jibDockerBuild.dependsOn(stage)
 
@@ -83,4 +102,7 @@ dependencies {
   testImplementation Dependencies.junitLauncher()
   testImplementation Dependencies.junitRunner()
   implementation Dependencies.logback()
+
+  compile group: 'io.kamon', name: 'kamon-bundle_2.13', version: '2.1.8'
+  compile group: 'io.kamon', name: 'kamon-prometheus_2.13', version: '2.1.8'
 }

@@ -39,3 +39,9 @@ aws ecr get-login-password --profile replace-me --region replace-me | docker log
 ```shell
 aws eks update-kubeconfig --region replace-me --name replace-me --profile replace-me && kubectl apply -f k8s/application.yml
 ```
+
+## Ports of interest
+| port  | application
+| ----- | ---
+| 9000  | play application
+| 9095  | prometheus metrics
