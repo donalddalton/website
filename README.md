@@ -37,7 +37,7 @@ aws ecr get-login-password --profile replace-me --region replace-me | docker log
 
 ## Deploy
 ```shell
-aws eks update-kubeconfig --region replace-me --name replace-me --profile replace-me && kubectl apply -f k8s/application.yml
+aws eks update-kubeconfig --region replace-me --name replace-me --profile replace-me && kubectl apply -f k8s
 ```
 
 ## Ports of interest
